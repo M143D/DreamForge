@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+torch
+diffusers==0.27.2
+transformers
+accelerate
+safetensors
+pillow
+python-multipart

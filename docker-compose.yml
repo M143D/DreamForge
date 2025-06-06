@@ -1,0 +1,40 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # 后端服务 (FastAPI + AI模型)
+  backend:
+    build: 
+      context: ./backend  # 指定构建上下文为 backend 目录
+    # 如果你有NVIDIA GPU并安装了NVIDIA Container Toolkit, 请取消下面的注释
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    ports:
+      - "8000:8000"  # 将主机的8000端口映射到容器的8000端口
+    volumes:
+      # 将Hugging Face的模型缓存目录挂载到主机
+      # 这样可以避免每次重建镜像时都重新下载模型
+      - huggingface_cache:/root/.cache/huggingface
+    command: uvicorn main:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
+
+  # 前端服务 (使用Nginx托管静态HTML文件)
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "8080:80" # 将主机的8080端口映射到容器的80端口
+    volumes:
+      # 将 frontend 目录下的内容挂载到Nginx的默认网站根目录
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - backend # 确保后端服务启动后，前端再启动
+    restart: unless-stopped
+
+# 定义一个具名卷来持久化模型缓存
+volumes:
+  huggingface_cache:

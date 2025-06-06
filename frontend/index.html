@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamForge - AI 绘画工坊</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定义字体和一些微调 */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* 加载动画样式 */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <!-- 头部 -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">DreamForge</h1>
+            <p class="text-gray-400 mt-2">你的个人AI绘画工坊</p>
+        </header>
+
+        <!-- 主体内容 -->
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左侧：控制面板 -->
+            <div class="lg:col-span-1 bg-gray-800 p-6 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-4 border-b border-gray-700 pb-2">创作参数</h2>
+                
+                <div class="space-y-4">
+                    <!-- 提示词 -->
+                    <div>
+                        <label for="prompt" class="block text-sm font-medium text-gray-300 mb-1">提示词 (Prompt)</label>
+                        <textarea id="prompt" rows="4" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="例如: 一只穿着宇航服的猫, 漂浮在太空, 看着地球, 赛博朋克风格"></textarea>
+                    </div>
+                    <!-- 反向提示词 -->
+                    <div>
+                        <label for="negative_prompt" class="block text-sm font-medium text-gray-300 mb-1">反向提示词 (Negative Prompt)</label>
+                        <textarea id="negative_prompt" rows="2" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2 focus:ring-2 focus:ring-purple-500 focus:outline-none" placeholder="不希望出现的内容, 如: 低质量, 模糊, 多余的手指"></textarea>
+                    </div>
+                    <!-- 尺寸 -->
+                     <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="width" class="block text-sm font-medium text-gray-300 mb-1">宽度</label>
+                            <input type="number" id="width" value="512" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2">
+                        </div>
+                        <div>
+                            <label for="height" class="block text-sm font-medium text-gray-300 mb-1">高度</label>
+                            <input type="number" id="height" value="512" class="w-full bg-gray-700 border border-gray-600 rounded-md p-2">
+                        </div>
+                    </div>
+                    <!-- 步数 -->
+                    <div>
+                        <label for="steps" class="block text-sm font-medium text-gray-300 mb-1">生成步数 (Steps)</label>
+                        <input type="range" id="steps" min="10" max="100" value="25" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                        <div class="text-center text-sm text-gray-400 mt-1"><span id="steps-value">25</span></div>
+                    </div>
+                </div>
+
+                <!-- 生成按钮 -->
+                <div class="mt-8">
+                    <button id="generate-btn" class="w-full text-white font-bold py-3 px-4 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 transition-all duration-300 transform hover:scale-105">
+                        开始生成
+                    </button>
+                </div>
+            </div>
+
+            <!-- 右侧：结果展示 -->
+            <div class="lg:col-span-2 bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col items-center justify-center min-h-[400px]">
+                <div id="image-container" class="w-full max-w-xl aspect-square flex items-center justify-center">
+                    <!-- 初始提示 -->
+                    <div id="placeholder" class="text-center text-gray-500">
+                        <p>你的作品将在这里展示</p>
+                    </div>
+                    <!-- 加载动画 -->
+                    <div id="loader" class="loader hidden"></div>
+                    <!-- 结果图片 -->
+                    <img id="result-image" src="" alt="生成的图片" class="hidden max-w-full max-h-full rounded-lg object-contain"/>
+                </div>
+                 <!-- 下载按钮 -->
+                <div class="mt-4">
+                    <a id="download-btn" href="#" download="dreamforge_art.png" class="hidden inline-block bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors">
+                        下载图片
+                    </a>
+                </div>
+                 <!-- 错误信息 -->
+                <div id="error-message" class="mt-4 text-red-400 text-center"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- 元素获取 ---
+        const promptEl = document.getElementById('prompt');
+        const negativePromptEl = document.getElementById('negative_prompt');
+        const widthEl = document.getElementById('width');
+        const heightEl = document.getElementById('height');
+        const stepsEl = document.getElementById('steps');
+        const stepsValueEl = document.getElementById('steps-value');
+        const generateBtn = document.getElementById('generate-btn');
+        
+        const placeholder = document.getElementById('placeholder');
+        const loader = document.getElementById('loader');
+        const resultImage = document.getElementById('result-image');
+        const downloadBtn = document.getElementById('download-btn');
+        const imageContainer = document.getElementById('image-container');
+        const errorMessage = document.getElementById('error-message');
+
+        // 后端 API 地址
+        const API_URL = 'http://localhost:8000/api/generate';
+
+        // --- 事件监听 ---
+
+        // 更新步数滑块的显示值
+        stepsEl.addEventListener('input', () => {
+            stepsValueEl.textContent = stepsEl.value;
+        });
+
+        // 点击生成按钮
+        generateBtn.addEventListener('click', async () => {
+            // 0. 获取输入参数
+            const payload = {
+                prompt: promptEl.value,
+                negative_prompt: negativePromptEl.value,
+                width: parseInt(widthEl.value),
+                height: parseInt(heightEl.value),
+                num_inference_steps: parseInt(stepsEl.value),
+            };
+
+            // 1. 校验 prompt 是否为空
+            if (!payload.prompt) {
+                alert('提示词不能为空！');
+                return;
+            }
+
+            // 2. 更新UI为加载状态
+            setLoading(true);
+
+            // 3. 发送API请求
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP 错误! 状态: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // 4. 显示返回的图片
+                const imageUrl = `data:image/png;base64,${data.image_base64}`;
+                resultImage.src = imageUrl;
+                downloadBtn.href = imageUrl;
+                showImage();
+
+            } catch (error) {
+                console.error('请求失败:', error);
+                showError(error.message);
+            } finally {
+                // 5. 结束加载状态
+                setLoading(false);
+            }
+        });
+
+        // --- UI 更新函数 ---
+        function setLoading(isLoading) {
+            if (isLoading) {
+                generateBtn.disabled = true;
+                generateBtn.textContent = '生成中...';
+                loader.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                resultImage.classList.add('hidden');
+                downloadBtn.classList.add('hidden');
+                errorMessage.textContent = '';
+            } else {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '开始生成';
+                loader.classList.add('hidden');
+            }
+        }
+
+        function showImage() {
+            resultImage.classList.remove('hidden');
+            downloadBtn.classList.remove('hidden');
+            placeholder.classList.add('hidden');
+        }
+        
+        function showError(message) {
+            placeholder.classList.remove('hidden');
+            errorMessage.textContent = `发生错误: ${message}`;
+        }
+    </script>
+</body>
+</html>
