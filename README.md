@@ -40,38 +40,95 @@ dreamforge/
     ```
 
 3.  **开始使用:**
-    * 前端界面: 打开浏览器访问 `http://localhost:8080`
-    * 后端API文档: 访问 `http://localhost:8000/docs`
+    * 前端界面: 打开浏览器访问 `http://localhost:80`。
 
-### 本地开发 (不使用 Docker)
+## 📦 下载与安装
 
-如果你想在本地直接运行和开发，请按以下步骤操作。
+你可以在[这里](https://github.com/M143D/DreamForge/releases)找到最新版本的发布。请下载并执行相关文件以安装 DreamForge。
 
-**1. 启动后端服务:**
+### 下载步骤
 
-```bash
-# 进入后端目录
-cd backend
-
-# 创建并激活虚拟环境 (推荐)
-python -m venv venv
-source venv/bin/activate  # on Windows: venv\Scripts\activate
-
-# 安装依赖
-pip install -r requirements.txt
-
-# 启动 FastAPI 服务
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-**2. 启动前端:**
-
-直接用浏览器打开 `frontend/index.html` 文件即可。
+1. 访问 [DreamForge Releases](https://github.com/M143D/DreamForge/releases) 页面。
+2. 找到最新版本，点击下载相应的文件。
+3. 解压并按照上述“如何运行”部分的说明进行设置。
 
 ## 🛠️ 技术栈
 
-- **后端:** Python, FastAPI, Diffusers, PyTorch
-- **前端:** HTML, Tailwind CSS, JavaScript
-- **部署:** Docker, Docker Compose
+DreamForge 使用了以下技术：
 
+- **后端:** FastAPI
+- **前端:** HTML, CSS, JavaScript
+- **容器化:** Docker, Docker Compose
+- **图像生成:** 依赖于先进的深度学习模型
 
+## 🌐 API 文档
+
+DreamForge 提供了 RESTful API，以便用户可以通过编程方式访问其功能。API 文档可以在项目内找到，或者你可以在代码中查看具体实现。
+
+### 示例请求
+
+以下是如何使用 API 的简单示例：
+
+```bash
+curl -X POST http://localhost:80/api/generate \
+-H "Content-Type: application/json" \
+-d '{"description": "一个美丽的日落"}'
+```
+
+### 响应示例
+
+成功的请求将返回生成的图像链接：
+
+```json
+{
+  "image_url": "http://localhost:80/images/generated_image.png"
+}
+```
+
+## 🎨 前端界面
+
+前端界面设计简洁，用户可以轻松输入文本描述并生成图像。用户体验为优先考虑，确保每个功能都直观易用。
+
+### 界面预览
+
+![DreamForge UI](https://placehold.co/800x400/1e293b/ffffff?text=DreamForge%20UI)
+
+## 🔧 开发与贡献
+
+欢迎任何人参与开发和贡献代码。请遵循以下步骤：
+
+1. **Fork 该项目**
+2. **创建你的功能分支**
+   ```bash
+   git checkout -b feature/YourFeature
+   ```
+3. **提交你的更改**
+   ```bash
+   git commit -m "Add some feature"
+   ```
+4. **推送到分支**
+   ```bash
+   git push origin feature/YourFeature
+   ```
+5. **创建 Pull Request**
+
+## 📄 许可证
+
+该项目使用 MIT 许可证。有关更多信息，请查看 [LICENSE](LICENSE) 文件。
+
+## 🗣️ 反馈与支持
+
+如有任何问题或建议，请在 GitHub 上提出问题，或者直接联系项目维护者。我们欢迎所有反馈。
+
+## 📚 参考资料
+
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+- [Docker Documentation](https://docs.docker.com/)
+- [Deep Learning Models](https://www.tensorflow.org/)
+
+## 🔗 相关链接
+
+- [DreamForge Releases](https://github.com/M143D/DreamForge/releases)
+- [GitHub Issues](https://github.com/M143D/DreamForge/issues)
+
+感谢你使用 DreamForge！我们期待你的反馈和贡献。
